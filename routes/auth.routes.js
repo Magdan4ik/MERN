@@ -1,6 +1,7 @@
 const { Router } = require('express');
-const brypt = require('bcrypt');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const config = require('config');
 const { check, validationResult } = require('express-validator');
 const User = require('../models/user');
 const router = Router();
@@ -30,7 +31,7 @@ router.post('/register',
 			return;
 		}
 
-		const hashedPass = await brypt.hash(password, 12);
+		const hashedPass = await bcrypt.hash(password, 12);
 		const user = new User({email, password: hashedPass})
 
 		await user.save()
@@ -51,6 +52,7 @@ router.post('/login',
 	async (req, res) => {
 	try {
 		const errors = validationResult(req);
+		
 
 		if(!errors.isEmpty()) {
 			return res.status(400).json({
@@ -60,6 +62,7 @@ router.post('/login',
 		}
 
 		const { email, password } = req.body;
+
 
 		const user = await User.findOne({email})
 
@@ -83,7 +86,6 @@ router.post('/login',
 
 		res.json({ token, userId: user.id})
 
-		
 
 	} catch (err) {
 		res.status(500).json({message: 'Что-то пошло не так...'})
