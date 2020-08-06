@@ -1,8 +1,10 @@
 const { Router } = require('express');
+const redis = require('../models/redis');
 const config = require('config');
 const shortId = require('shortid');
 const Link = require('../models/link');
 const authMiddleware = require('../middleware/auth.middleware');
+const linksCacheMiddleware = require('../middleware/links.cache.middleware');
 const router = Router();
 
 router.post('/generate', authMiddleware, async(req, res) => {
@@ -36,10 +38,15 @@ router.post('/generate', authMiddleware, async(req, res) => {
 	}
 })
 
-router.get('/', authMiddleware, async(req, res) => {
+router.get('/', [authMiddleware, linksCacheMiddleware], async(req, res) => {
 	try {
-		const links = await Link.find({ owner: req.user.userId}) // ???
+		const  { userId } = req.user;
+		const links = await Link.find({ owner: userId}) // ???
+
+		redis.setex(`links_${userId}`, 3600, JSON.stringify(links));
+
 		res.json(links)
+
 	} catch (err) {
 		res.status(500).json({message: 'Что-то пошло не так...'})
 	}

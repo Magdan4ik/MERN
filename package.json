@@ -26,6 +26,7 @@
     "express-validator": "^6.6.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.9.22",
+    "redis": "^3.0.2",
     "shortid": "^2.2.15"
   },
   "devDependencies": {
